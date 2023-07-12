@@ -1,9 +1,12 @@
+const express = require('express');
 const axios = require('axios');
 const TelegramBot = require('node-telegram-bot-api');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = process.env['MongoDB_KEY'];
 
-async function marketOpenStatus() {
+const app = express();
+
+app.get('/', async (req, res) => {
   try {
     const marketStatusAPI = process.env['MarketOpenStatus'];
     const response = await axios.get(marketStatusAPI);
@@ -16,19 +19,21 @@ async function marketOpenStatus() {
       fetchData(chatId);
     } else {
       console.log("Market is closed");
-      
     }
+
+    res.send("Market status checked.");
   } catch (error) {
     console.error("Error fetching market status:", error);
+    res.status(500).send("Error fetching market status.");
   }
-}
+});
 
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 
 async function insertData(messageId) {
@@ -37,7 +42,7 @@ async function insertData(messageId) {
     const collection = database.collection("deleteMessageId");
 
     const newData = {
-      messageId: messageId
+      messageId: messageId,
     };
 
     const result = await collection.insertOne(newData);
@@ -46,7 +51,6 @@ async function insertData(messageId) {
     console.error("Error saving data:", error);
   }
 }
-
 
 async function readDataDeleteMessage(chatId, bot) {
   try {
@@ -63,17 +67,25 @@ async function readDataDeleteMessage(chatId, bot) {
     const messageId = result[0].messageId;
 
     // Delete the message using the bot.deleteMessage method
-    bot.deleteMessage(chatId, messageId)
+    bot
+      .deleteMessage(chatId, messageId)
       .then(() => {
         console.log("Message deleted successfully");
 
         // Delete the message ID from the MongoDB database
-        collection.deleteOne({ messageId: messageId })
+        collection
+          .deleteOne({ messageId: messageId })
           .then((result) => {
-            console.log("Message ID deleted from MongoDB successfully:", result.deletedCount);
+            console.log(
+              "Message ID deleted from MongoDB successfully:",
+              result.deletedCount
+            );
           })
           .catch((error) => {
-            console.error("Error deleting message ID from MongoDB:", error);
+            console.error(
+              "Error deleting message ID from MongoDB:",
+              error
+            );
           });
       })
       .catch((error) => {
@@ -84,17 +96,18 @@ async function readDataDeleteMessage(chatId, bot) {
   }
 }
 
-
-
-
 async function fetchData(chatId) {
   try {
     const liveDataAPI = process.env['IndexLiveDataAPI'];
     const response = await axios.get(liveDataAPI);
     const data = response.data;
-    const nepseData = data.result.find(item => item.indexName === 'Nepse');
+    const nepseData = data.result.find(
+      (item) => item.indexName === "Nepse"
+    );
     const telegramBot_TOKEN = process.env['TelegramBot_TOKEN'];
-    const bot = new TelegramBot(telegramBot_TOKEN, { polling: false });
+    const bot = new TelegramBot(telegramBot_TOKEN, {
+      polling: false,
+    });
     const turnoverValue = amountInFormat(nepseData.turnover);
     const totalVolume = amountInFormat(nepseData.volume);
     const lossGainIcon = currentlyLossGain(nepseData.difference);
@@ -106,7 +119,8 @@ Volume: [${totalVolume}]
 Probability: ${prediction}
 Previous Close: [${nepseData.previousValue}]
 ${nepseData.asOfDateString}`;
-    bot.sendMessage(chatId, message)
+    bot
+      .sendMessage(chatId, message)
       .then((sentMessage) => {
         console.log("Message ID:", sentMessage.message_id);
         readDataDeleteMessage(chatId, bot);
@@ -120,11 +134,18 @@ ${nepseData.asOfDateString}`;
   }
 }
 
-//--------------------------->>
-setInterval(() => {
-  console.log("Start Machine")
-  marketOpenStatus();
-}, 60000);
+function marketOpenStatus() {
+  setInterval(() => {
+    console.log("Start Machine");
+    fetchData();
+  }, 60000);
+}
+
+app.listen(3000, () => {
+  console.log("Server is running on port 3000");
+});
+
+
 
 //--------------------------->>
 
