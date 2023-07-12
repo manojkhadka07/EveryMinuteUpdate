@@ -16,6 +16,13 @@
     "node-fetch": "^3.3.1",
     "node-telegram-bot-api": "^0.61.0"
   },
+  "dependencies": {
+  "@types/node": "^18.0.6",
+  "axios": "^1.4.0",
+  "mongodb": "^4.4.9", 
+  "node-fetch": "^3.3.1",
+  "node-telegram-bot-api": "^0.61.0"
+},
   "scripts": {
     "build": "yarn install"
   }
