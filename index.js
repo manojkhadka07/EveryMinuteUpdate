@@ -23,8 +23,6 @@ async function marketOpenStatus() {
   }
 }
 
-
-
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -122,20 +120,14 @@ ${nepseData.asOfDateString}`;
   }
 }
 
-
+//--------------------------->>
 setInterval(() => {
+  console.log("Start Machine")
   marketOpenStatus();
-}, 5000);
+}, 60000);
 
 //--------------------------->>
 
-
-
-
-
-
-
-//--------------------------->>
 async function predictStock() {
   try {
     // Make a request to the API
@@ -187,11 +179,13 @@ async function predictStock() {
     return "";
   }
 }
+//--------------------------->>
 
 function currentlyLossGain(differenceRs) {
   const lossgain = differenceRs > 0 ? "🟢 Gain" : differenceRs < 0 ? "🔴 Loss" : "🔵";
   return lossgain;
 }
+//--------------------------->>
 
 function amountInFormat(num) {
   var num = (Math.round(num).toString());
@@ -262,3 +256,4 @@ function amountInFormat(num) {
   return formatAmount;
 }
 
+//--------------------------->>
