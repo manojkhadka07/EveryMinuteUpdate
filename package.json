@@ -17,6 +17,6 @@
     "node-telegram-bot-api": "^0.61.0"
   },
   "scripts": {
-    "build": "index.js"
+    "build": "yarn install"
   }
 }
