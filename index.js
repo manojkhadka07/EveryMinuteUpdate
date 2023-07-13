@@ -27,7 +27,7 @@ async function marketOpenStatus() {
 
     if (isOpen) {
       console.log("Market is open");
-      var chatId = "5053589427";
+      var chatId = process.env['ChatID'];
       fetchData(chatId);
     } else {
       console.log("Market is closed");
@@ -114,13 +114,17 @@ async function fetchData(chatId) {
     const totalVolume = amountInFormat(nepseData.volume);
     const lossGainIcon = currentlyLossGain(nepseData.difference);
     const prediction = await predictStock(); // Await the predictStock function call
+    var asOfDateString = nepseData.asOfDateString
+      .replace(/:\d{2}\s/, ' ');
+
+
     const message = `NEPSE is at ${nepseData.indexValue} with
 ${lossGainIcon} ${nepseData.difference} [${nepseData.percentChange}%]
 Turnover: [${turnoverValue}]
 Volume: [${totalVolume}]
 Probability: ${prediction}
 Previous Close: [${nepseData.previousValue}]
-${nepseData.asOfDateString}`;
+${asOfDateString}`;
     bot.sendMessage(chatId, message)
       .then((sentMessage) => {
         console.log("Message ID:", sentMessage.message_id);
