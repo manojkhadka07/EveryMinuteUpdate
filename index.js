@@ -143,7 +143,7 @@ ${asOfDateString}`;
 setInterval(() => {
   console.log("Start Machine")
   marketOpenStatus();
-}, 60000);
+}, 50000);
 
 //--------------------------->>
 //--------------------------->>
